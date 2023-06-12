@@ -1,0 +1,45 @@
+# Define the Automox Worklet script
+
+# Function to check if a software is installed
+function IsSoftwareInstalled {
+    param(
+        [string]$SoftwareName
+    )
+
+    $installedSoftware = Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -eq $SoftwareName}
+    return ($installedSoftware -ne $null)
+}
+
+# Check if the software is already installed
+$softwareName = "YourSoftwareName"
+$softwareInstalled = IsSoftwareInstalled -SoftwareName $softwareName
+
+if ($softwareInstalled) {
+    Write-Output "The software is already installed."
+}
+else {
+    # Define installation steps here
+    # Example: Download and install the software using a specific installer
+
+    # Download the software installer
+    $installerUrl = "https://example.com/software-installer.exe"
+    $installerPath = "$env:TEMP\software-installer.exe"
+    Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+
+    # Install the software silently
+    $installArgs = "/silent /norestart"
+    Start-Process -FilePath $installerPath -ArgumentList $installArgs -Wait
+
+    # Verify if the software was installed successfully
+    $softwareInstalled = IsSoftwareInstalled -SoftwareName $softwareName
+
+    if ($softwareInstalled) {
+        Write-Output "The software was installed successfully."
+    }
+    else {
+        Write-Output "Failed to install the software."
+        # You can add error handling steps here if needed
+    }
+
+    # Clean up the installer
+    Remove-Item -Path $installerPath -Force
